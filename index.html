@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GharSure — Know Before You Sign</title>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WV6BHMDKDR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WV6BHMDKDR');
+</script>
+
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#F5F2EC; --surface:#FDFCF9; --ink:#1A1816; --ink2:#6B6560; --ink3:#A8A29C;
+  --border:rgba(26,24,22,0.10); --accent:#C4521A; --accent-bg:#FDF0EA;
+  --green:#1B6B3A; --green-bg:#E8F5EE; --amber:#8A6200; --amber-bg:#FFF7E0;
+  --red:#8B1A1A; --red-bg:#FFF0F0; --error:#C0392B; --error-bg:#FFF5F5;
+  --shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:200}
+.logo{font-size:19px;font-weight:700;letter-spacing:-.03em}
+.logo span{color:var(--accent)}
+.header-right{display:flex;align-items:center;gap:8px}
+.header-cta{padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif}
+
+/* HERO */
+.hero{text-align:center;padding:36px 20px 24px}
+.hero h1{font-size:clamp(22px,5vw,38px);font-weight:700;letter-spacing:-.03em;margin-bottom:10px;line-height:1.2}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:14px;color:var(--ink2);max-width:400px;margin:0 auto 14px;line-height:1.65}
+.trust-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.trust-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink2)}
+
+/* FORM */
+.container{max-width:680px;margin:0 auto;padding:0 14px 80px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:11px;font-weight:600;color:var(--ink2)}
+.field input,.field select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Sora',sans-serif;color:var(--ink);outline:none;transition:border-color .15s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--accent);background:#fff}
+.field input::placeholder{color:var(--ink3)}
+.field input.err{border-color:var(--error);background:var(--error-bg)}
+.field-hint{font-size:11px;color:var(--error);display:none;margin-top:2px;padding-left:2px}
+.field-hint.show{display:block;animation:slideIn .18s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+
+.analyze-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;margin-top:4px}
+.analyze-btn:hover{background:#2D2B28;transform:translateY(-1px)}
+.analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* LOADING */
+.loading{display:none;text-align:center;padding:36px 20px}
+.loading.show{display:block}
+.proc-list{list-style:none;display:inline-block;text-align:left;margin-top:16px}
+.proc-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink3);padding:4px 0;transition:color .3s}
+.proc-item.done{color:var(--ink)}
+.proc-icon{font-size:11px;width:14px;font-family:'DM Mono',monospace}
+
+/* REPORT */
+.report{display:none}
+.report.show{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.score-hero{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:12px;display:flex;align-items:center;gap:24px;box-shadow:var(--shadow)}
+.dial{position:relative;width:110px;height:110px;flex-shrink:0}
+.dial svg{width:110px;height:110px}
+.dial-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.dial-num{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.dial-sub{font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:2px}
+.score-meta{flex:1}
+.grade-pill{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:8px}
+.score-verdict{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px;line-height:1.3}
+.score-sub{font-size:11px;color:var(--ink2);line-height:1.5;font-family:'DM Mono',monospace}
+
+.modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.mod-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mod-name{font-size:11px;font-weight:600;color:var(--ink2)}
+.mod-weight{font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace}
+.mod-score-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mod-num{font-size:22px;font-weight:700;min-width:34px}
+.bar-track{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.mod-finding{font-size:11px;color:var(--ink2);line-height:1.55}
+
+.three-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.info-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
+.info-item{display:flex;gap:6px;font-size:11px;color:var(--ink);margin-bottom:6px;line-height:1.5}
+
+.nego-card{background:var(--accent-bg);border:1px solid rgba(196,82,26,.15);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.nego-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.nego-text{font-size:12px;color:var(--ink);line-height:1.7;white-space:pre-line}
+
+/* AMENITIES IN REPORT */
+.amenities-report-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:var(--shadow)}
+.amenities-note{font-size:12px;color:var(--ink2);margin-bottom:14px;line-height:1.5}
+.amenities-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.amenity-check{display:flex;align-items:center;gap:7px;padding:9px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;user-select:none}
+.amenity-check.on{background:var(--green-bg);border-color:#2EA36A}
+.amenity-check input[type=checkbox]{width:14px;height:14px;accent-color:var(--green);flex-shrink:0}
+.amenity-check span{font-size:11px;font-weight:500;color:var(--ink2)}
+.amenity-check.on span{color:var(--green)}
+.amenity-analyse-btn{width:100%;background:var(--bg);color:var(--ink);border:1.5px solid var(--border);border-radius:9px;padding:11px;font-size:13px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s}
+.amenity-analyse-btn:hover{background:#eee}
+.amenity-result{margin-top:12px;display:none}
+.amenity-result.show{display:block;animation:fadeUp .2s ease}
+.amenity-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.amenity-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.amenity-tag.good{background:var(--green-bg);color:var(--green)}
+.amenity-tag.warn{background:var(--amber-bg);color:var(--amber)}
+.amenity-tag.bad{background:var(--red-bg);color:var(--red)}
+.amenity-impact{font-size:12px;color:var(--ink2);line-height:1.7;padding:12px 14px;background:var(--bg);border-radius:8px;border-left:3px solid var(--accent)}
+
+.hard-stop-card{background:var(--red-bg);border:1px solid rgba(139,26,26,.2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.hs-label{font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px}
+.hs-text{font-size:13px;font-weight:500;color:var(--red)}
+
+/* ARCHITECT REVIEW SECTION */
+.arch-review-section{background:linear-gradient(135deg,#1A1816 0%,#2D1A0A 100%);border-radius:18px;padding:28px 24px;margin-bottom:12px;color:#fff;position:relative;overflow:hidden}
+.arch-review-section::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(196,82,26,0.15);border-radius:50%}
+.arch-review-section::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(196,82,26,0.10);border-radius:50%}
+.arch-tag{display:inline-block;background:rgba(196,82,26,0.25);color:#F4A070;border:1px solid rgba(196,82,26,0.4);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;margin-bottom:12px;position:relative;z-index:1}
+.arch-review-section h3{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px;position:relative;z-index:1}
+.arch-review-section p{font-size:13px;opacity:.75;line-height:1.65;margin-bottom:18px;position:relative;z-index:1}
+.arch-features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;position:relative;z-index:1}
+.arch-feature{display:flex;align-items:flex-start;gap:8px;font-size:12px;opacity:.9;line-height:1.4}
+.arch-feature-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.arch-pay-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1}
+.arch-pay-btn:hover{background:#A8401A;transform:translateY(-1px)}
+.arch-pay-note{font-size:11px;opacity:.45;margin-top:8px;text-align:center;position:relative;z-index:1}
+
+/* POPUP OVERLAY */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.popup-overlay.show{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.popup{background:var(--surface);border-radius:20px;padding:0;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;animation:popUp .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popUp{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.popup-header{background:linear-gradient(135deg,#1A1816,#2D1A0A);color:#fff;padding:24px 24px 20px;border-radius:20px 20px 0 0;position:relative}
+.popup-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.popup-header h3{font-size:20px;font-weight:700;margin-bottom:4px}
+.popup-header p{font-size:12px;opacity:.65;line-height:1.5}
+.popup-body{padding:20px 24px}
+.popup-price-row{display:flex;align-items:center;justify-content:space-between;background:var(--accent-bg);border:1px solid rgba(196,82,26,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.popup-price-label{font-size:13px;color:var(--ink2)}
+.popup-price-val{font-size:24px;font-weight:700;color:var(--accent)}
+.popup-price-note{font-size:11px;color:var(--ink3)}
+.popup-what{margin-bottom:16px}
+.popup-what-title{font-size:11px;font-weight:700;color:var(--ink3);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.popup-item{display:flex;gap:10px;margin-bottom:8px;font-size:13px;color:var(--ink);line-height:1.5}
+.popup-item-icon{font-size:16px;flex-shrink:0;width:22px}
+.popup-pay-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;margin-bottom:8px}
+.popup-pay-btn:hover{background:#A8401A}
+.popup-pay-btn:disabled{opacity:.6;cursor:not-allowed}
+.popup-secure{display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--ink3);margin-bottom:8px}
+.popup-upi{font-size:11px;color:var(--ink3);text-align:center}
+
+.report-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3);text-align:center;margin-top:20px}
+
+/* THANK YOU */
+.thankyou-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.thankyou-overlay.show{display:flex}
+.thankyou-card{background:var(--surface);border-radius:20px;padding:32px 24px;max-width:380px;width:100%;text-align:center;animation:popUp .3s cubic-bezier(.34,1.56,.64,1)}
+.thankyou-icon{font-size:48px;margin-bottom:12px}
+.thankyou-card h3{font-size:22px;font-weight:700;margin-bottom:6px}
+.thankyou-card p{font-size:13px;color:var(--ink2);line-height:1.65;margin-bottom:20px}
+.thankyou-wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#25D366;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer;text-decoration:none;margin-bottom:10px}
+.thankyou-note{font-size:11px;color:var(--ink3)}
+
+@media(max-width:520px){
+  .grid-2,.grid-3,.modules-grid,.three-grid{grid-template-columns:1fr}
+  .amenities-grid{grid-template-columns:1fr 1fr}
+  .arch-features{grid-template-columns:1fr}
+  .score-hero{flex-direction:column;gap:14px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Ghar<span>Sure</span><span style="font-size:11px;font-weight:400;color:var(--ink3);margin-left:6px;letter-spacing:0">by JD Creations</span></div>
+  <div class="header-right">
+    <button class="header-cta" onclick="openPopup()">Get Architect Review — ₹199</button>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>Know before<br>you <span>sign</span></h1>
+  <p>AI-powered property health score — valuation, builder reputation, legal status, and real negotiation advice. Free, instant, independent.</p>
+  <div class="trust-pills">
+    <div class="trust-pill">🔒 Not sold to brokers</div>
+    <div class="trust-pill">⚡ Results in ~30 sec</div>
+    <div class="trust-pill">🏗 Architect-backed</div>
+    <div class="trust-pill">₹0 always free</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- FORM -->
+  <div class="form-card">
+    <div class="section-label">Property details</div>
+
+    <div class="field">
+      <label>Builder / Developer name</label>
+      <input type="text" id="builder" placeholder="e.g. DLF, Prestige, Signature Global" oninput="clearErr('builder')">
+      <div class="field-hint" id="h-builder">⚠ Please enter the builder name</div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:12px">
+      <div class="field" style="margin-bottom:0">
+        <label>City</label>
+        <input type="text" id="city" placeholder="e.g. Gurgaon, Noida, Pune" oninput="clearErr('city')">
+        <div class="field-hint" id="h-city">⚠ Please enter the city</div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Locality <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
+        <input type="text" id="locality" placeholder="e.g. Sector 79, Whitefield">
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:12px">
+      <div class="field" style="margin-bottom:0">
+        <label>Asking price (₹ lakh)</label>
+        <input type="number" id="price" placeholder="e.g. 85" oninput="clearErr('price')">
+        <div class="field-hint" id="h-price">⚠ Enter price in lakhs</div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Carpet area (sq ft)</label>
+        <input type="number" id="carpet" placeholder="e.g. 950" oninput="clearErr('carpet');clearErr('sba')">
+        <div class="field-hint" id="h-carpet">⚠ Enter carpet area in sq ft</div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Super built-up (sq ft)</label>
+        <input type="number" id="sba" placeholder="e.g. 1350" oninput="clearErr('sba');clearErr('carpet')">
+        <div class="field-hint" id="h-sba">⚠ Enter super built-up in sq ft</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Property status</label>
+      <select id="status">
+        <option value="ready to move">Ready to move</option>
+        <option value="under construction">Under construction</option>
+        <option value="new launch">New launch</option>
+      </select>
+    </div>
+
+    <button class="analyze-btn" id="analyze-btn" onclick="runAnalysis()">Analyze this property →</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div style="font-size:16px;font-weight:600">Analysing property…</div>
+    <ul class="proc-list">
+      <li class="proc-item" id="p1"><span class="proc-icon">○</span> Checking valuation vs area rates</li>
+      <li class="proc-item" id="p2"><span class="proc-icon">○</span> Reviewing builder reputation</li>
+      <li class="proc-item" id="p3"><span class="proc-icon">○</span> Verifying RERA and legal status</li>
+      <li class="proc-item" id="p4"><span class="proc-icon">○</span> Analysing carpet vs SBA ratio</li>
+      <li class="proc-item" id="p5"><span class="proc-icon">○</span> Scoring neighbourhood</li>
+      <li class="proc-item" id="p6"><span class="proc-icon">○</span> Evaluating resale liquidity</li>
+      <li class="proc-item" id="p7"><span class="proc-icon">○</span> Compiling score + negotiation brief</li>
+    </ul>
+  </div>
+
+  <!-- REPORT -->
+  <div class="report" id="report"></div>
+
+</div>
+
+<!-- ARCHITECT REVIEW POPUP -->
+<div class="popup-overlay" id="popup-overlay" onclick="handleOverlayClick(event)">
+  <div class="popup" id="popup">
+    <div class="popup-header">
+      <button class="popup-close" onclick="closePopup()">✕</button>
+      <div style="font-size:28px;margin-bottom:8px">🏗</div>
+      <h3>Architect Review</h3>
+      <p>Your property, reviewed by a licensed architect — not an algorithm.</p>
+    </div>
+    <div class="popup-body">
+      <div class="popup-price-row">
+        <div>
+          <div class="popup-price-label">One-time review fee</div>
+          <div class="popup-price-note">For this property only</div>
+        </div>
+        <div style="text-align:right">
+          <div class="popup-price-val">₹199</div>
+        </div>
+      </div>
+
+      <div class="popup-what">
+        <div class="popup-what-title">What you get</div>
+        <div class="popup-item"><span class="popup-item-icon">📞</span><span>20-minute call with a licensed architect (B.Arch, GGSIP University)</span></div>
+        <div class="popup-item"><span class="popup-item-icon">🗺</span><span>Floor plan analysis — vastu, ventilation, space efficiency, red flags</span></div>
+        <div class="popup-item"><span class="popup-item-icon">🏢</span><span>Builder-specific advice based on professional knowledge</span></div>
+        <div class="popup-item"><span class="popup-item-icon">💬</span><span>Personalised negotiation script with exact rupee amounts</span></div>
+        <div class="popup-item"><span class="popup-item-icon">📋</span><span>Written summary sent on WhatsApp within 4 hours</span></div>
+      </div>
+
+      <button class="popup-pay-btn" id="pay-btn" onclick="initiatePayment()">
+        Pay ₹199 and Book Review →
+      </button>
+      <div class="popup-secure">🔒 Secured by Razorpay · UPI, Cards, NetBanking accepted</div>
+      <div class="popup-upi">You'll be connected on WhatsApp immediately after payment</div>
+    </div>
+  </div>
+</div>
+
+<!-- THANK YOU OVERLAY -->
+<div class="thankyou-overlay" id="thankyou-overlay">
+  <div class="thankyou-card">
+    <div class="thankyou-icon">✅</div>
+    <h3>Payment successful!</h3>
+    <p>Your ₹199 architect review is confirmed. Tap below to open WhatsApp — your property details will be pre-filled. Our architect responds within 4 hours.</p>
+    <a class="thankyou-wa-btn" id="thankyou-wa" href="#" target="_blank">
+      💬 Open WhatsApp now
+    </a>
+    <div class="thankyou-note">Keep this tab open — you can refer back to your score anytime</div>
+  </div>
+</div>
+
+<script>
+const BACKEND = "";
+const WA = "917065566312";
+// ─────────────────────────────────────────────────────────────────────────────
+// IMPORTANT: Replace with your real Razorpay Key ID from razorpay.com dashboard
+// Sign up at razorpay.com → Settings → API Keys → Generate Key
+// ─────────────────────────────────────────────────────────────────────────────
+const RAZORPAY_KEY = "YOUR_RAZORPAY_KEY_ID";
+
+let currentReport = null;
+let currentInputs = null;
+
+// ── Validation ───────────────────────────────────────────────────────────────
+function showErr(id, msg) {
+  const el = document.getElementById(id); if(el) el.classList.add("err");
+  const h = document.getElementById("h-"+id); if(h){ if(msg) h.textContent="⚠ "+msg; h.classList.add("show"); }
+}
+function clearErr(id) {
+  const el = document.getElementById(id); if(el) el.classList.remove("err");
+  const h = document.getElementById("h-"+id); if(h) h.classList.remove("show");
+}
+function validate() {
+  let ok = true;
+  const b = document.getElementById("builder").value.trim();
+  const c = document.getElementById("city").value.trim();
+  const p = parseFloat(document.getElementById("price").value);
+  const ca = parseInt(document.getElementById("carpet").value);
+  const sb = parseInt(document.getElementById("sba").value);
+  if(!b){ showErr("builder","Please enter the builder name"); ok=false; }
+  if(!c){ showErr("city","Please enter the city"); ok=false; }
+  if(!p||p<=0){ showErr("price","Enter a valid price in lakhs (e.g. 85)"); ok=false; }
+  if(!ca||ca<=0){ showErr("carpet","Enter carpet area in sq ft (e.g. 950)"); ok=false; }
+  if(!sb||sb<=0){ showErr("sba","Enter super built-up area in sq ft (e.g. 1350)"); ok=false; }
+  if(ca&&sb&&ca>=sb){ showErr("carpet","Carpet must be less than super built-up"); showErr("sba","Must be larger than carpet area"); ok=false; }
+  if(!ok){ const f=document.querySelector('.err'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); }
+  return ok;
+}
+
+// ── Popup ────────────────────────────────────────────────────────────────────
+function openPopup() {
+  document.getElementById("popup-overlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+  if(typeof gtag!=='undefined') gtag('event','popup_opened');
+}
+function closePopup() {
+  document.getElementById("popup-overlay").classList.remove("show");
+  document.body.style.overflow = "";
+}
+function handleOverlayClick(e) {
+  if(e.target === document.getElementById("popup-overlay")) closePopup();
+}
+
+// ── Payment ──────────────────────────────────────────────────────────────────
+function initiatePayment() {
+  const btn = document.getElementById("pay-btn");
+
+  // Build WhatsApp message from current report if available
+  const builder = currentInputs?.builder || document.getElementById("builder").value || "a property";
+  const city = currentInputs?.city || document.getElementById("city").value || "";
+  const price = currentInputs?.price || "";
+  const carpet = currentInputs?.carpet || "";
+  const score = currentReport?.final_score || "";
+  const grade = currentReport?.grade || "";
+
+  const waMsg = encodeURIComponent(
+    `Hi, I just paid ₹199 for the GharSure architect review.\n\nProperty: ${builder}, ${city}\nPrice: ₹${price}L, Carpet: ${carpet} sqft${score ? `\nAI Score: ${score}/100 (Grade ${grade})` : ''}\n\nPlease proceed with my architect review.`
+  );
+  const waUrl = `https://wa.me/${WA}?text=${waMsg}`;
+
+  // If no Razorpay key set, go directly to WhatsApp (manual payment mode)
+  if(!RAZORPAY_KEY || RAZORPAY_KEY === "YOUR_RAZORPAY_KEY_ID") {
+    closePopup();
+    // Show thank you with WhatsApp link
+    document.getElementById("thankyou-wa").href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hi, I want to book the GharSure architect review for ₹199.\n\nProperty: ${builder}, ${city}\nPrice: ₹${price}L, Carpet: ${carpet} sqft\n\nPlease share GPay/UPI number.`)}`;
+    document.getElementById("thankyou-overlay").classList.add("show");
+    if(typeof gtag!=='undefined') gtag('event','payment_initiated_manual');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Opening payment…";
+
+  const options = {
+    key: RAZORPAY_KEY,
+    amount: 19900, // ₹199 in paise
+    currency: "INR",
+    name: "GharSure",
+    description: "Architect Property Review",
+    image: "",
+    handler: function(response) {
+      // Payment successful
+      closePopup();
+      document.getElementById("thankyou-wa").href = waUrl;
+      document.getElementById("thankyou-overlay").classList.add("show");
+      if(typeof gtag!=='undefined') gtag('event','payment_success',{value:199,currency:'INR'});
+    },
+    prefill: { name: "", email: "", contact: "" },
+    notes: { property: `${builder}, ${city}, ₹${price}L` },
+    theme: { color: "#C4521A" },
+    modal: {
+      ondismiss: function() {
+        btn.disabled = false;
+        btn.textContent = "Pay ₹199 and Book Review →";
+      }
+    }
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.on('payment.failed', function(response) {
+    btn.disabled = false;
+    btn.textContent = "Pay ₹199 and Book Review →";
+    alert("Payment failed. Please try again or use UPI directly.");
+  });
+  rzp.open();
+}
+
+// ── Amenities ────────────────────────────────────────────────────────────────
+function toggleCheck(el){ el.classList.toggle('on'); }
+
+function analyzeAmenities() {
+  const checks = document.querySelectorAll('.amenity-check input[type=checkbox]');
+  const a = {};
+  checks.forEach(c=>{ if(c.checked) a[c.name]=true; });
+  const tags=[], impacts=[];
+
+  if(a.powerBackup){tags.push({t:'⚡ Full power backup',c:'good'});impacts.push('Full DG backup — no outage impact on daily life. Adds ₹1–2L resale value.');}
+  else{tags.push({t:'⚠ Power backup not confirmed',c:'warn'});}
+  if(a.gated){tags.push({t:'🔒 Gated community',c:'good'});impacts.push('Gated — 5–8% resale premium. Better security and maintenance standards.');}
+  else{tags.push({t:'⚠ Not gated',c:'warn'});}
+  if(a.lift){tags.push({t:'🛗 Lift available',c:'good'});}
+  else{tags.push({t:'❌ No lift',c:'bad'});impacts.push('No lift — deal-breaker for most families on 3rd floor+. Affects resale badly.');}
+  if(a.maidAvailable){tags.push({t:'🧹 Maid quarters',c:'good'});impacts.push('Maid room available — strong family liveability. Domestic help costs ₹8,000–15,000/month.');}
+  if(a.coveredParking){tags.push({t:'🚗 Covered parking',c:'good'});impacts.push('Covered parking adds ₹3–5L value vs open. Significant resale advantage.');}
+  else{tags.push({t:'⚠ No covered parking',c:'warn'});}
+  if(a.gym) tags.push({t:'💪 Gym / Clubhouse',c:'good'});
+  if(a.swimmingPool){tags.push({t:'🏊 Swimming pool',c:'good'});impacts.push('Swimming pool adds ₹2–3L resale value and attracts quality tenants.');}
+  if(a.cctv) tags.push({t:'📹 CCTV security',c:'good'});
+  if(a.park){tags.push({t:'🌳 Park / Garden',c:'good'});impacts.push('Park or garden — strong for families with children. Boosts liveability score.');}
+
+  const tagsHtml='<div class="amenity-tags">'+tags.map(t=>`<span class="amenity-tag ${t.c}">${t.t}</span>`).join('')+'</div>';
+  const impactHtml=impacts.length?`<div class="amenity-impact"><strong>🏗 Architect note:</strong><br>${impacts.join('<br>')}</div>`:'';
+  const r=document.getElementById("amenity-result");
+  r.innerHTML=tagsHtml+impactHtml;
+  r.classList.add("show");
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function gradeStyle(g){return{A:{bg:"#E8F5EE",color:"#1B6B3A"},B:{bg:"#E8F5EE",color:"#1B6B3A"},C:{bg:"#FFF7E0",color:"#8A6200"},D:{bg:"#FFE8D6",color:"#8A3D00"},F:{bg:"#FFF0F0",color:"#8B1A1A"}}[g]||{bg:"#FFF7E0",color:"#8A6200"};}
+function barColor(s){return s>=80?"#2EA36A":s>=65?"#52B788":s>=50?"#F4A261":s>=35?"#E76F51":"#C1121F";}
+function dialArc(score){
+  const r=42,cx=55,cy=55,deg=(score/100)*270,toRad=d=>d*Math.PI/180;
+  const sx=cx+r*Math.cos(toRad(-225)),sy=cy+r*Math.sin(toRad(-225));
+  const ex=cx+r*Math.cos(toRad(-225+deg)),ey=cy+r*Math.sin(toRad(-225+deg));
+  return{sx,sy,ex,ey,large:deg>180?1:0};
+}
+const moduleNames={valuation:{name:"Valuation check",weight:"25%"},builder:{name:"Builder reputation",weight:"25%"},legal:{name:"Legal status",weight:"20%"},carpet_ratio:{name:"Carpet ratio",weight:"10%"},neighbourhood:{name:"Neighbourhood",weight:"10%"},resale:{name:"Resale outlook",weight:"10%"}};
+
+// ── Run analysis ─────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  if(!validate()) return;
+  const builder=document.getElementById("builder").value.trim();
+  const city=document.getElementById("city").value.trim();
+  const price=parseFloat(document.getElementById("price").value);
+  const carpet=parseInt(document.getElementById("carpet").value);
+  const sba=parseInt(document.getElementById("sba").value);
+  const locality=document.getElementById("locality").value.trim();
+  const status=document.getElementById("status").value;
+
+  if(typeof gtag!=='undefined') gtag('event','analyze_clicked',{city,builder});
+
+  const btn=document.getElementById("analyze-btn");
+  btn.disabled=true; btn.textContent="Analysing…";
+  document.getElementById("loading").classList.add("show");
+  document.getElementById("report").classList.remove("show");
+  document.getElementById("report").innerHTML="";
+
+  const steps=["p1","p2","p3","p4","p5","p6","p7"];
+  let si=0;
+  const iv=setInterval(()=>{
+    if(si<steps.length){const el=document.getElementById(steps[si]);el.classList.add("done");el.querySelector(".proc-icon").textContent="✓";si++;}
+  },320);
+
+  try {
+    const res=await fetch(BACKEND+"/ai-report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({price,builder,city,locality,carpet,sba,status})});
+    clearInterval(iv);
+    steps.forEach(id=>{const el=document.getElementById(id);el.classList.add("done");el.querySelector(".proc-icon").textContent="✓";});
+    if(!res.ok){const e=await res.json();alert(e.error||"Server error.");return;}
+    const report=await res.json();
+    currentReport=report;
+    currentInputs={builder,city,locality,price,carpet,sba};
+    if(typeof gtag!=='undefined') gtag('event','report_generated',{city,builder,score:report.final_score,grade:report.grade});
+    await new Promise(r=>setTimeout(r,300));
+    document.getElementById("loading").classList.remove("show");
+    renderReport(report,{builder,city,locality,price,carpet,sba});
+    steps.forEach(id=>{const el=document.getElementById(id);el.classList.remove("done");el.querySelector(".proc-icon").textContent="○";});
+  } catch(err){
+    clearInterval(iv);
+    document.getElementById("loading").classList.remove("show");
+    alert("Cannot reach server. Please try again.");
+  } finally {
+    btn.disabled=false; btn.textContent="Analyze this property →";
+  }
+}
+
+// ── Render report ────────────────────────────────────────────────────────────
+function renderReport(r, inputs) {
+  const g=gradeStyle(r.grade);
+  const arc=dialArc(r.final_score);
+  const dc=barColor(r.final_score);
+  const rid="GS-"+Date.now().toString(36).toUpperCase();
+
+  const moduleCards=Object.entries(r.scores||{}).map(([key,mod])=>{
+    const mn=moduleNames[key];if(!mn)return"";const bc=barColor(mod.score);
+    return`<div class="mod-card"><div class="mod-top"><div class="mod-name">${mn.name}</div><div class="mod-weight">${mn.weight}</div></div><div class="mod-score-row"><div class="mod-num" style="color:${bc}">${mod.score}</div><div class="bar-track"><div class="bar-fill" style="width:${mod.score}%;background:${bc}"></div></div></div><div class="mod-finding">${mod.finding}</div></div>`;
+  }).join("");
+
+  const risks=(r.top_risks||[]).map(x=>`<div class="info-item"><span style="color:#C1121F;flex-shrink:0">▲</span>${x}</div>`).join("");
+  const positives=(r.positives||[]).map(x=>`<div class="info-item"><span style="color:#2EA36A;flex-shrink:0">◆</span>${x}</div>`).join("");
+  const hardStop=r.hard_stop?`<div class="hard-stop-card"><div class="hs-label">⛔ HARD STOP — DO NOT PROCEED</div><div class="hs-text">${r.hard_stop_reason}</div></div>`:"";
+
+  document.getElementById("report").innerHTML=`
+    ${hardStop}
+    <div class="score-hero">
+      <div class="dial">
+        <svg viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="42" fill="none" stroke="#EAE6DF" stroke-width="7" stroke-linecap="round" stroke-dasharray="197 1000" stroke-dashoffset="-30"/>
+          <path d="M${arc.sx} ${arc.sy} A42 42 0 ${arc.large} 1 ${arc.ex} ${arc.ey}" fill="none" stroke="${dc}" stroke-width="7" stroke-linecap="round"/>
+        </svg>
+        <div class="dial-center"><div class="dial-num" style="color:${dc}">${r.final_score}</div><div class="dial-sub">/ 100</div></div>
+      </div>
+      <div class="score-meta">
+        <div class="grade-pill" style="background:${g.bg};color:${g.color}">Grade ${r.grade}</div>
+        <div class="score-verdict">${r.verdict}</div>
+        <div class="score-sub">${inputs.builder.toUpperCase()} · ${inputs.city.toUpperCase()}${inputs.locality?', '+inputs.locality.toUpperCase():''} · ₹${inputs.price}L · ${inputs.carpet} sqft carpet</div>
+      </div>
+    </div>
+
+    <div class="modules-grid">${moduleCards}</div>
+
+    <div class="three-grid">
+      <div class="info-card"><div class="info-label">Top risks</div>${risks}</div>
+      <div class="info-card"><div class="info-label">Positives</div>${positives}</div>
+      <div class="info-card"><div class="info-label">Negotiate on</div><div class="info-item"><span style="color:${barColor(r.final_score)};flex-shrink:0">→</span>${(r.negotiation||"").split('\n')[0]}</div><div style="font-size:10px;color:var(--ink3);margin-top:6px">Full script ↓</div></div>
+    </div>
+
+    <div class="nego-card"><div class="nego-label">Negotiation ammunition</div><div class="nego-text">${r.negotiation}</div></div>
+
+    <div class="amenities-report-card">
+      <div class="section-label">Amenities check</div>
+      <div class="amenities-note">Tick what this property offers. Get architect's impact analysis on your liveability and resale value.</div>
+      <div class="amenities-grid">
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="powerBackup"> <span>⚡ Full power backup</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="gated"> <span>🔒 Gated community</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="lift"> <span>🛗 Lift available</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="maidAvailable"> <span>🧹 Maid quarters</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="coveredParking"> <span>🚗 Covered parking</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="gym"> <span>💪 Gym / Clubhouse</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="swimmingPool"> <span>🏊 Swimming pool</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="cctv"> <span>📹 CCTV security</span></label>
+        <label class="amenity-check" onclick="toggleCheck(this)"><input type="checkbox" name="park"> <span>🌳 Park / Garden</span></label>
+      </div>
+      <button class="amenity-analyse-btn" onclick="analyzeAmenities()">Analyse amenities impact →</button>
+      <div class="amenity-result" id="amenity-result"></div>
+    </div>
+
+    <div class="arch-review-section">
+      <div class="arch-tag">🏗 Human + AI Review</div>
+      <h3>Get your architect review</h3>
+      <p>Your AI score is ready. Now get a licensed architect to review the floor plan, verify the builder, and write your personalised negotiation script.</p>
+      <div class="arch-features">
+        <div class="arch-feature"><span class="arch-feature-icon">📞</span><span>20-min call with licensed architect</span></div>
+        <div class="arch-feature"><span class="arch-feature-icon">🗺</span><span>Floor plan red-flag analysis</span></div>
+        <div class="arch-feature"><span class="arch-feature-icon">💬</span><span>WhatsApp summary within 4 hrs</span></div>
+        <div class="arch-feature"><span class="arch-feature-icon">🏢</span><span>Builder-specific professional insight</span></div>
+      </div>
+      <button class="arch-pay-btn" onclick="openPopup()">
+        <span>Book architect review</span>
+        <span style="background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:20px;font-size:13px">₹199 only</span>
+      </button>
+      <div class="arch-pay-note">Secured by Razorpay · UPI / GPay / Cards accepted</div>
+    </div>
+
+    <div class="report-id">Report ID: ${rid} · GharSure v3.0 · Not financial advice</div>`;
+
+  document.getElementById("report").classList.add("show");
+  document.getElementById("report").scrollIntoView({behavior:"smooth",block:"start"});
+}
+</script>
+</body>
+</html>
