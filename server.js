@@ -161,7 +161,7 @@ app.post("/ai-report", async (req, res) => {
   res.json(report);
 });
 
-app.get('/', (req,res) =&gt;{ res.send('Server is up and running!');});
+app.get('/', (req,res) => { res.send('Server is up and running!');});
 app.get("/health", (req, res) => res.json({ status: "ok", product: "GharSure", version: "3.0.0" }));
 
 const PORT = process.env.PORT || 3000;
